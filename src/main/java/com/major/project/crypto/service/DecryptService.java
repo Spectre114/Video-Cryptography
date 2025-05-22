@@ -1,15 +1,10 @@
 package com.major.project.crypto.service;
 
-import java.util.HashMap;
-
 import org.opencv.core.Mat;
-
 import org.springframework.stereotype.Service;
 
 @Service
 public class DecryptService {
-
-    HashMap<Integer, String> metadataMap = new HashMap<>();
 
     public int rotateBitsRight(int value, int shift) {
         return ((value >>> shift) | (value << (8 - shift))) & 0xFF;
