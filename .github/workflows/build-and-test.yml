@@ -1,0 +1,36 @@
+name: Build and Test the application
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    name: Build and test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install OpenCV dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopencv-dev
+
+      - name: Prepare dummy encrypted data
+        run: |
+          mkdir -p encrypted
+          mkdir -p decrypted
+
+      - name: Build and run tests
+        run: |
+          mvn clean install -Dspring.profiles.active=test -Dmaven.repo.local=${{ runner.temp }}/.m2/repository -Dvideo.encryptedImageDir=encrypted/ -Dvideo.decryptedFrameDir=decrypted/
+
+
