@@ -1,5 +1,6 @@
 package com.major.project.crypto.config;
 
+import com.major.project.crypto.VideoCryptographyApplication;
 import com.major.project.crypto.task.CompareFramesTask;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -9,6 +10,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -16,13 +18,14 @@ import com.major.project.crypto.task.DecryptionTask;
 import com.major.project.crypto.task.EncryptionTask;
 
 @Configuration
-@Profile("!test")
-public class BatchConfig {
+@Import(VideoCryptographyApplication.class)
+@Profile("test")
+public class BatchTestConfig {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
 
-    public BatchConfig(JobRepository jobRepository,
+    public BatchTestConfig(JobRepository jobRepository,
                        PlatformTransactionManager transactionManager) {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
@@ -30,9 +33,9 @@ public class BatchConfig {
     }
 
     @Bean
-    public Job videoCryptographyJob(@Qualifier("encryption") Step encryptStep,
-                                    @Qualifier("decryption") Step decryptStep,
-                                    @Qualifier("compare") Step comparison) {
+    public Job videoCryptographyJob(@Qualifier("encryptionTest") Step encryptStep,
+                                    @Qualifier("decryptionTest") Step decryptStep,
+                                    @Qualifier("compareTest") Step comparison) {
         return new JobBuilder("videoCryptographyJob", jobRepository)
                 .start(encryptStep)
                 .next(decryptStep)
@@ -41,23 +44,23 @@ public class BatchConfig {
     }
 
     @Bean
-    @Qualifier("encryption")
+    @Qualifier("encryptionTest")
     public Step encryption(EncryptionTask encryptionTask) {
-        return new StepBuilder("encryption", jobRepository)
+        return new StepBuilder("encryptionTest", jobRepository)
                 .tasklet(encryptionTask, transactionManager).build();
     }
 
     @Bean
-    @Qualifier("decryption")
+    @Qualifier("decryptionTest")
     public Step decryption(DecryptionTask decryptionTask) {
-        return new StepBuilder("decryption", jobRepository)
+        return new StepBuilder("decryptionTest", jobRepository)
                 .tasklet(decryptionTask, transactionManager).build();
     }
 
     @Bean
-    @Qualifier("compare")
+    @Qualifier("compareTest")
     public Step comparison(CompareFramesTask compareFramesTask) {
-        return  new StepBuilder("compare", jobRepository)
+        return  new StepBuilder("compareTest", jobRepository)
                 .tasklet(compareFramesTask, transactionManager).build();
     }
 
