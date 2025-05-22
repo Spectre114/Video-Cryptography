@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Video-Cryptography
+  batch:
+    jdbc:
+      initialize-schema: embedded
+
+video:
+  input-file: "input_vid.mp4"
+  output-encrypted: "encryptedVideo.mp4"
+  decrypted-video: "decryptedVideo.mp4"
+  ecryptedImageDir: "encrypted_frames/"
+  decryptedFrameDir: "decrypted_frames/"
+
+
+encrypt:
+  secret-key: "123456" #random key
