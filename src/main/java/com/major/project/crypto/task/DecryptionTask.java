@@ -44,7 +44,7 @@ public class DecryptionTask implements Tasklet {
     public DecryptionTask(DecryptService decrypt,
                           @Value("${video.output-encrypted}") String encryptedFile,
                           @Value("${video.decrypted-video}") String decryptedVideo,
-                          @Value("${video.ecryptedImageDir}") String encryptedFrameDir,
+                          @Value("${video.encryptedImageDir}") String encryptedFrameDir,
                           @Value("${video.decryptedFrameDir}") String decryptedFrameDir,
                           Frames frames) {
         this.decrypt = decrypt;
