@@ -70,7 +70,7 @@ public class EncryptionTask implements Tasklet {
             keyHex = encrypt.generateHexKey(encrypt.frameToByte(frame), sha256);
 
             keyHexBytes =keyHex.getBytes(StandardCharsets.UTF_8);
-            Mat encrypted = encrypt.encrypt(frame, keyHexBytes);
+            Mat encrypted = encrypt.encrypt(frame.clone(), keyHexBytes);
             String encryptedPath = ecryptedImageDir + String.format("frame_%04d.png", frameCount);
             Imgcodecs.imwrite(encryptedPath, encrypted);
             metadata.put(frameCount, keyHex);

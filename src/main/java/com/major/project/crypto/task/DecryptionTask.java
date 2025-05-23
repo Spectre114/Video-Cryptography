@@ -89,7 +89,7 @@ public class DecryptionTask implements Tasklet {
             Mat encryptedFrame = Imgcodecs.imread(path);
             byte[] keyHexBytes = metadataMap.get(i).getBytes(StandardCharsets.UTF_8);
 
-            Mat decrypted = decrypt.decryptFrame(encryptedFrame, keyHexBytes);
+            Mat decrypted = decrypt.decryptFrame(encryptedFrame.clone(), keyHexBytes);
             decryptedFrames.add(decrypted.clone());
 
             String decryptedPath = decryptedFrameDir + String.format("frame_%04d.png", i);

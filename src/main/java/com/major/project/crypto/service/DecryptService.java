@@ -38,7 +38,7 @@ public class DecryptService {
                     originalPixel[k] = shiftBitsRight(shifted, 5);
                 }
 
-                decryptedFrame.put(i, j, originalPixel);
+                decryptedFrame.put(i, j, originalPixel.clone());
             }
         }
 
