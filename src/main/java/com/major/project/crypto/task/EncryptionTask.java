@@ -32,7 +32,7 @@ public class EncryptionTask implements Tasklet {
     private final String inputFile;
     private final String encryptedFile;
     private final boolean sha256;
-    private final String ecryptedImageDir;
+    private final String encryptedImageDir;
     EncryptService encrypt;
     Frames frames;
     HashMap<Integer, String> metadata = new HashMap<>();
@@ -42,14 +42,14 @@ public class EncryptionTask implements Tasklet {
     public EncryptionTask(@Value("${video.input-file}") String inputFile,
                           @Value("${video.output-encrypted}") String encryptedFile,
                           @Value("${encrypt.mode:true}") boolean sha256,
-                          @Value("${video.ecryptedImageDir}") String ecryptedImageDir,
+                          @Value("${video.encryptedImageDir}") String encryptedImageDir,
                           EncryptService encrypt,
                           Frames frames) {
         this.inputFile = inputFile;
         this.encryptedFile = encryptedFile;
         this.sha256 = sha256;
         this.encrypt = encrypt;
-        this.ecryptedImageDir = ecryptedImageDir;
+        this.encryptedImageDir = encryptedImageDir;
         this.frames = frames;
     }
 
@@ -57,7 +57,7 @@ public class EncryptionTask implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         LOGGER.info("Encryption Started");
         OpenCV.loadLocally();
-        new File(ecryptedImageDir).mkdirs();
+        new File(encryptedImageDir).mkdirs();
 
         VideoCapture videoCapture = new VideoCapture(inputFile);
         Mat frame = new Mat();
@@ -71,7 +71,7 @@ public class EncryptionTask implements Tasklet {
 
             keyHexBytes =keyHex.getBytes(StandardCharsets.UTF_8);
             Mat encrypted = encrypt.encrypt(frame.clone(), keyHexBytes);
-            String encryptedPath = ecryptedImageDir + String.format("frame_%04d.png", frameCount);
+            String encryptedPath = encryptedImageDir + String.format("frame_%04d.png", frameCount);
             Imgcodecs.imwrite(encryptedPath, encrypted);
             metadata.put(frameCount, keyHex);
             frameCount++;

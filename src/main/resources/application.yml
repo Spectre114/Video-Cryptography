@@ -9,7 +9,7 @@ video:
   input-file: "input_vid.mp4"
   output-encrypted: "encryptedVideo.mp4"
   decrypted-video: "decryptedVideo.mp4"
-  ecryptedImageDir: "encrypted_frames/"
+  encryptedImageDir: "encrypted_frames/"
   decryptedFrameDir: "decrypted_frames/"
 
 
