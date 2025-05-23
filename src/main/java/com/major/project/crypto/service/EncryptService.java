@@ -64,7 +64,7 @@ public class EncryptService {
                     encryptedPixel[k] = shiftedPixel ^ rotatedKey;
                 }
 
-                encryptedFrame.put(i, j, encryptedPixel);
+                encryptedFrame.put(i, j, encryptedPixel.clone());
             }
         }
 
