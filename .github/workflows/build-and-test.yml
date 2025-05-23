@@ -1,4 +1,4 @@
-name: Build and Test the application
+name: Build and Test Application
 
 on:
   workflow_dispatch:
