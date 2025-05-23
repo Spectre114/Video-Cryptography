@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class VideoCryptographyApplication {
 
 	public static void main(String[] args) {
-		System.out.println("Video Cryptography Application Started");
+		LOGGER.info("Video Cryptography Application Started");
 		SpringApplication.run(VideoCryptographyApplication.class, args);
 	}
 
