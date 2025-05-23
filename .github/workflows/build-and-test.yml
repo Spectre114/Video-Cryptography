@@ -23,5 +23,6 @@ jobs:
         shell: bash
         run: |
           mvn clean install --file 'pom.xml' --batch-mode
+    
 
 

@@ -22,24 +22,23 @@ public class DecryptService {
 
         Mat decryptedFrame = new Mat(rows, cols, frame.type());
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] encryptedPixel = frame.get(i, j); // [B, G, R]
-                double[] originalPixel = new double[channels];
+        double[] encryptedPixel;
+        double[] originalPixel = new double[channels];
 
-                for (int k = 0; k < channels; k++) {
-                    int idx = (i + j + k) % keyLen;
-                    int rotatedKey = rotateBitsRight(keyHexBytes[idx] & 0xFF, 3);
+        int totalPixels = rows * cols;
 
-                    // Undo XOR
-                    int shifted = (int) encryptedPixel[k] ^ rotatedKey;
+        for (int index = 0; index < totalPixels; index++) {
+            int i = index / cols;
+            int j = index % cols;
 
-                    // Undo shiftBits by applying reverse shift (circular right shift)
-                    originalPixel[k] = shiftBitsRight(shifted, 5);
-                }
+            encryptedPixel = frame.get(i, j);
 
-                decryptedFrame.put(i, j, originalPixel.clone());
+            for (int k = 0; k < channels; k++) {
+                int idx = (i + j + k) % keyLen;
+                originalPixel[k] = shiftBitsRight((int) encryptedPixel[k], 5);
             }
+
+            decryptedFrame.put(i, j, originalPixel);
         }
 
         return decryptedFrame;

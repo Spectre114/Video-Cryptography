@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" th:href="@{/style.css}" />
+    <title>Video Cryptography</title>
+</head>
+<body>
+<div class="container">
+    <h1>Batch Job GUI</h1>
+
+    <!-- Status Display -->
+    <div th:if="${status}">
+        <p>Job Status: <span th:text="${status}"></span></p>
+    </div>
+
+    <!-- Upload Video Form -->
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <label for="videoFile">Upload Input Video:</label>
+        <input type="file" id="videoFile" name="videoFile" accept="video/*" required />
+        <button type="submit">Upload Video</button>
+    </form>
+
+    <!-- Run Job Form -->
+    <form method="post" action="/run">
+        <button type="submit">Run Job</button>
+    </form>
+
+    <!-- Show Decrypted Video Button -->
+    <div class="button-wrapper">
+        <button onclick="showVideo()">Show Decrypted Video</button>
+    </div>
+
+    <!-- Video Sections Side-by-Side -->
+    <div class="video-section">
+        <!-- Input Video Preview -->
+        <div th:if="${showInputVideo}" id="videoInput">
+            <h2>Input Video</h2>
+            <video controls autoplay>
+                <source src="/videoInput" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- Decrypted Video Section -->
+        <div id="videoContainer" style="display: none;">
+            <h2>Decrypted Video</h2>
+            <video controls>
+                <source src="/video" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showVideo() {
+        document.getElementById("videoContainer").style.display = "block";
+    }
+</script>
+</body>
+</html>

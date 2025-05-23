@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.major.project.crypto.module.VideoPaths;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nu.pattern.OpenCV;
@@ -29,7 +30,7 @@ import com.major.project.crypto.service.EncryptService;
 @Slf4j
 public class EncryptionTask implements Tasklet {
 
-    private final String inputFile;
+    VideoPaths videoPaths;
     private final String encryptedFile;
     private final boolean sha256;
     private final String encryptedImageDir;
@@ -39,18 +40,18 @@ public class EncryptionTask implements Tasklet {
     List<Mat> copiedFrames = new ArrayList<>();
 
     @Autowired
-    public EncryptionTask(@Value("${video.input-file}") String inputFile,
-                          @Value("${video.output-encrypted}") String encryptedFile,
+    public EncryptionTask(@Value("${video.output-encrypted}") String encryptedFile,
                           @Value("${encrypt.mode:true}") boolean sha256,
                           @Value("${video.encryptedImageDir}") String encryptedImageDir,
                           EncryptService encrypt,
-                          Frames frames) {
-        this.inputFile = inputFile;
+                          Frames frames,
+                          VideoPaths videoPaths) {
         this.encryptedFile = encryptedFile;
         this.sha256 = sha256;
         this.encrypt = encrypt;
         this.encryptedImageDir = encryptedImageDir;
         this.frames = frames;
+        this.videoPaths = videoPaths;
     }
 
     @Override
@@ -59,7 +60,7 @@ public class EncryptionTask implements Tasklet {
         OpenCV.loadLocally();
         new File(encryptedImageDir).mkdirs();
 
-        VideoCapture videoCapture = new VideoCapture(inputFile);
+        VideoCapture videoCapture = new VideoCapture(videoPaths.getInputFilePath());
         Mat frame = new Mat();
 
         String keyHex;
