@@ -22,26 +22,29 @@ public class DecryptService {
 
         Mat decryptedFrame = new Mat(rows, cols, frame.type());
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                double[] encryptedPixel = frame.get(i, j); // [B, G, R]
-                double[] originalPixel = new double[channels];
+        int totalPixels = rows * cols;
+        for (int idxPixel = 0; idxPixel < totalPixels; idxPixel++) {
+            int i = idxPixel / cols;  // row index
+            int j = idxPixel % cols;  // column index
 
-                for (int k = 0; k < channels; k++) {
-                    int idx = (i + j + k) % keyLen;
-                    int rotatedKey = rotateBitsRight(keyHexBytes[idx] & 0xFF, 3);
+            double[] encryptedPixel = frame.get(i, j); // [B, G, R]
+            double[] originalPixel = new double[channels];
 
-                    // Undo XOR
-                    int shifted = (int) encryptedPixel[k] ^ rotatedKey;
+            for (int k = 0; k < channels; k++) {
+                int idx = (i + j + k) % keyLen;
+                int rotatedKey = rotateBitsRight(keyHexBytes[idx] & 0xFF, 3);
 
-                    // Undo shiftBits by applying reverse shift (circular right shift)
-                    originalPixel[k] = shiftBitsRight(shifted, 5);
-                }
+                // Undo XOR
+                int shifted = (int) encryptedPixel[k] ^ rotatedKey;
 
-                decryptedFrame.put(i, j, originalPixel.clone());
+                // Undo shiftBits by applying reverse shift (circular right shift)
+                originalPixel[k] = shiftBitsRight(shifted, 5);
             }
+
+            decryptedFrame.put(i, j, originalPixel.clone());
         }
 
         return decryptedFrame;
     }
+
 }
