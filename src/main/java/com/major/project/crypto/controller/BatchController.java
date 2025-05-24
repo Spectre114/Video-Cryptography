@@ -30,18 +30,25 @@ import com.major.project.crypto.module.VideoPaths;
 @Controller
 public class BatchController {
 
-    @Value("${video.decrypted-video}")
-    private String decryptedVideo;
+    private final String decryptedVideo;
+
+    private final VideoPaths videoPaths;
+
+    private final JobLauncher jobLauncher;
+
+    private final Job videoCryptographyJob;
 
     @Autowired
-    VideoPaths videoPaths;
+    public BatchController(@Value("${video.decrypted-video}") String decryptedVideo,
+                           VideoPaths videoPaths,
+                           JobLauncher jobLauncher,
+                           Job videoCryptographyJob) {
+        this.decryptedVideo = decryptedVideo;
+        this.videoPaths = videoPaths;
+        this.jobLauncher = jobLauncher;
+        this.videoCryptographyJob = videoCryptographyJob;
 
-    @Autowired
-    JobLauncher jobLauncher;
-
-    @Autowired
-    Job videoCryptographyJob;
-
+    }
     @GetMapping("/")
     public String home() {
         return "index";

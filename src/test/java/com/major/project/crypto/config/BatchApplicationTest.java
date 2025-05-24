@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 
+import com.major.project.crypto.module.VideoPaths;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import nu.pattern.OpenCV;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
@@ -28,26 +28,34 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBatchTest
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {BatchTestConfig.class, TestConfig.class})
+@ContextConfiguration(classes = {BatchTestConfig.class, TestConfig.class, VideoPaths.class})
 @Slf4j
 public class BatchApplicationTest {
 
     @Autowired
     JobLauncherTestUtils jobLauncherTestUtils;
 
+    VideoPaths videoPaths;
+
+    private final String inputFile;
     private final String outputVideoFile;
     private final String metadataFile;
     private final String encryptedImageDir;
     private final String decryptedFrameDir;
 
-    public BatchApplicationTest(@Value("${video.decrypted-video}") String outputVideoFile,
+    @Autowired
+    public BatchApplicationTest(@Value("${video.input-file}") String inputFile,
+                                @Value("${video.decrypted-video}") String outputVideoFile,
                                 @Value("${video.output-encrypted}") String metadataFile,
                                 @Value("${video.ecryptedImageDir}") String encryptedImageDir,
-                                @Value("${video.decryptedFrameDir}") String decryptedFrameDir) {
+                                @Value("${video.decryptedFrameDir}") String decryptedFrameDir,
+                                VideoPaths videoPaths) {
+        this.inputFile = inputFile;
         this.outputVideoFile = outputVideoFile;
         this.metadataFile = metadataFile + ".json";
         this.encryptedImageDir = encryptedImageDir;
         this.decryptedFrameDir = decryptedFrameDir;
+        this.videoPaths = videoPaths;
     }
 
     @Test
@@ -59,6 +67,11 @@ public class BatchApplicationTest {
 
     }
 
+    @BeforeEach
+    public void setUp() {
+        videoPaths.setInputFilePath(inputFile);
+    }
+
     @AfterEach
     @SneakyThrows
     public void cleanUpFiles() {
@@ -68,8 +81,6 @@ public class BatchApplicationTest {
         deleteDirectory(decryptedFrameDir);
     }
 
-    @AfterAll
-    public static void cleanUp() {}
     private void deleteIfExists(String filePath) {
 
         File file = new File(filePath);
