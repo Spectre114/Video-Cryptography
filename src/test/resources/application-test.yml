@@ -1,5 +1,7 @@
 spring:
   batch:
+    job:
+      enabled: true
     jdbc:
       initialize-schema: embedded
 

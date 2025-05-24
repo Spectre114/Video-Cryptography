@@ -22,6 +22,6 @@ jobs:
       - name: Build and run tests
         shell: bash
         run: |
-          mvn clean install --file 'pom.xml' --batch-mode
+          mvn clean install --file 'pom.xml' -Dspring.batch.job.enabled=true --batch-mode
 
 
