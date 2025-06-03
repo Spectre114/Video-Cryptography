@@ -82,7 +82,7 @@ public class DecryptionTask implements Tasklet {
         Size frameSize = new Size(width, height);
 
         int fourcc = VideoWriter.fourcc('f', 'f', 'v', '1');
-        VideoWriter writer = new VideoWriter(decryptedVideo, fourcc, 20.0, frameSize, true);
+        VideoWriter writer = new VideoWriter(decryptedVideo, fourcc, 30.0, frameSize, true);
 
         for (int i = 0; metadataMap.containsKey(i); i++) {
             String path = encryptedFrameDir + String.format("frame_%04d.png", i);

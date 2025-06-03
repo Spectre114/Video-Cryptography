@@ -16,4 +16,4 @@ video:
 
 
 encrypt:
-  secret-key: "123456" #random key
+  secret-key: ${SECRET} #Key to generate hash string to encrypt the frames

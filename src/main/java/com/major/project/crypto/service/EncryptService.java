@@ -51,25 +51,25 @@ public class EncryptService {
 
         Mat encryptedFrame = new Mat(rows, cols, frame.type());
 
-        int totalPixels = rows * cols;
-        for (int idxPixel = 0; idxPixel < totalPixels; idxPixel++) {
-            int i = idxPixel / cols;  // row index
-            int j = idxPixel % cols;  // column index
+        double[] pixel;
+        double[] encryptedPixel = new double[channels];
 
-            double[] pixel = frame.get(i, j); // pixel has [B, G, R]
-            double[] encryptedPixel = new double[channels];
+        int totalPixels = rows * cols;
+
+        for (int index = 0; index < totalPixels; index++) {
+            int i = index / cols;
+            int j = index % cols;
+
+            pixel = frame.get(i, j);
 
             for (int k = 0; k < channels; k++) {
                 int idx = (i + j + k) % keyLen;
-                int rotatedKey = rotateBits(keyHexBytes[idx] & 0xFF, 3);
-                int shiftedPixel = shiftBits((int) pixel[k], 5);
-                encryptedPixel[k] = shiftedPixel ^ rotatedKey;
+                encryptedPixel[k] = shiftBits((int) pixel[k], 5);
             }
 
-            encryptedFrame.put(i, j, encryptedPixel.clone());
+            encryptedFrame.put(i, j, encryptedPixel);
         }
 
         return encryptedFrame;
     }
-
 }
