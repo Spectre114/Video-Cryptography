@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class DecryptService {
 
-    public int rotateBitsRight(int value, int shift) {
-        return ((value >>> shift) | (value << (8 - shift))) & 0xFF;
+    private int rotateBits(int value, int shift) {
+        return ((value << shift) | (value >>> (8 - shift))) & 0xFF;
     }
 
     public int shiftBitsRight(int value, int shift) {
@@ -32,9 +32,10 @@ public class DecryptService {
 
             for (int k = 0; k < channels; k++) {
                 int idx = (i + j + k) % keyLen;
-                int rotatedKey = rotateBitsRight(keyHexBytes[idx] & 0xFF, 3);
+                // Use same rotation as encryption - XOR will undo the encryption
+                int rotatedKey = rotateBits(keyHexBytes[idx] & 0xFF, 3);
 
-                // Undo XOR
+                // Undo XOR first
                 int shifted = (int) encryptedPixel[k] ^ rotatedKey;
 
                 // Undo shiftBits by applying reverse shift (circular right shift)
