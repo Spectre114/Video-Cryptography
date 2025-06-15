@@ -1,7 +1,9 @@
 package com.major.project.crypto.module;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -21,4 +23,5 @@ import org.springframework.stereotype.Component;
 public class Frames {
     List<Mat> copiedFrames = new ArrayList<>();
     List<Mat> decryptedFrames = new ArrayList<>();
+    Queue<Mat> framesToDecrypt = new ArrayDeque<>();
 }
