@@ -3,11 +3,13 @@ package com.major.project.crypto.task;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Arrays;
+import java.util.Queue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class DecryptionTask implements Tasklet {
     Frames frames;
     DecryptService decrypt;
     List<Mat> decryptedFrames = new ArrayList<>();
+    Queue<Mat> framesToDecrypt = new ArrayDeque<>();
 
     @Autowired
     public DecryptionTask(DecryptService decrypt,
@@ -58,8 +61,12 @@ public class DecryptionTask implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
 
+        //TODO Add handshake logic to ensure that the
+        // decryption is done only if the secret key matches with that generated during encryption
         LOGGER.info("Decryption Started");
         OpenCV.loadLocally();
+        framesToDecrypt = frames.getFramesToDecrypt();
+        //TODO clean code to remove the use of images
         try {
             ObjectMapper mapper = new ObjectMapper();
             metadataMap = mapper.readValue(new File(encryptedFile + ".json"),
@@ -86,7 +93,8 @@ public class DecryptionTask implements Tasklet {
 
         for (int i = 0; metadataMap.containsKey(i); i++) {
             String path = encryptedFrameDir + String.format("frame_%04d.png", i);
-            Mat encryptedFrame = Imgcodecs.imread(path);
+//            Mat encryptedFrame = Imgcodecs.imread(path);
+            Mat encryptedFrame = framesToDecrypt.remove().clone();
             byte[] keyHexBytes = metadataMap.get(i).getBytes(StandardCharsets.UTF_8);
 
             Mat decrypted = decrypt.decryptFrame(encryptedFrame.clone(), keyHexBytes);
@@ -98,6 +106,7 @@ public class DecryptionTask implements Tasklet {
         }
         writer.release();
         frames.setDecryptedFrames(decryptedFrames);
+        frames.setFramesToDecrypt(framesToDecrypt);
         LOGGER.info("Decrypted Video stored at: {}", decryptedVideo);
         return RepeatStatus.FINISHED;
     }
