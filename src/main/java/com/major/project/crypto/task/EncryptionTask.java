@@ -2,9 +2,11 @@ package com.major.project.crypto.task;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.major.project.crypto.module.VideoPaths;
@@ -38,6 +40,7 @@ public class EncryptionTask implements Tasklet {
     Frames frames;
     HashMap<Integer, String> metadata = new HashMap<>();
     List<Mat> copiedFrames = new ArrayList<>();
+    Queue<Mat> framesToDecrypt = new ArrayDeque<>();
 
     @Autowired
     public EncryptionTask(@Value("${video.output-encrypted}") String encryptedFile,
@@ -56,8 +59,13 @@ public class EncryptionTask implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        //TODO Either optimise the encryption logic
+        // or use a different approach to handle large videos
+        // or compress the videos before processing
         LOGGER.info("Encryption Started");
         OpenCV.loadLocally();
+
+        //TODO clean code to remove the use of images
         new File(encryptedImageDir).mkdirs();
 
         VideoCapture videoCapture = new VideoCapture(videoPaths.getInputFilePath());
@@ -72,12 +80,15 @@ public class EncryptionTask implements Tasklet {
 
             keyHexBytes =keyHex.getBytes(StandardCharsets.UTF_8);
             Mat encrypted = encrypt.encrypt(frame.clone(), keyHexBytes);
+            framesToDecrypt.add(encrypted.clone());
             String encryptedPath = encryptedImageDir + String.format("frame_%04d.png", frameCount);
             Imgcodecs.imwrite(encryptedPath, encrypted);
             metadata.put(frameCount, keyHex);
             frameCount++;
         }
         videoCapture.release();
+        frames.setFramesToDecrypt(framesToDecrypt);
+        LOGGER.info("Frames queue size {}", frames.getFramesToDecrypt().size());
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(new File(encryptedFile + ".json"), metadata);
         frames.setCopiedFrames(copiedFrames);
