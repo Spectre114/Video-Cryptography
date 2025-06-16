@@ -23,6 +23,12 @@ public class EncryptService {
         return ((value << shift) | (value >>> (8 - shift))) & 0xFF;
     }
 
+    /**
+     * Convert frames to bytes.
+     *
+     * @param frame from the original video
+     * @return bytes of frame
+     */
     public byte[] frameToByte(Mat frame) {
         int type = 0;
         if (frame.channels() == 1) {
@@ -38,11 +44,24 @@ public class EncryptService {
         return data;
     }
 
+    /**
+     * Generate hex string for the frame.
+     *
+     * @param frame from the original video
+     * @param sha256 whether to use sha256 or sha1 for hex string
+     * @return hex string
+     */
     public String generateHexKey(byte[] frame, boolean sha256) {
         return sha256 ? DigestUtils.sha256Hex(frame) : DigestUtils.sha1Hex(frame);
     }
 
-
+    /**
+     * Encrypted the frame from the input video.
+     *
+     * @param frame from the original video
+     * @param keyHexBytes bytes of generated hex string
+     * @return encrypted frame
+     */
     public Mat encrypt(Mat frame, byte[] keyHexBytes) {
         int rows = frame.rows();
         int cols = frame.cols();

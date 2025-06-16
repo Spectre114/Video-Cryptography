@@ -29,6 +29,14 @@ public class BatchConfig {
 
     }
 
+    /**
+     * Main job to encrypt and decrypt the video.
+     *
+     * @param encryptStep step to encrypt the video
+     * @param decryptStep step to decrypt the video
+     * @param comparison compare the frames of original and decrypted video
+     * @return job
+     */
     @Bean
     public Job videoCryptographyJob(@Qualifier("encryption") Step encryptStep,
                                     @Qualifier("decryption") Step decryptStep,
@@ -40,6 +48,12 @@ public class BatchConfig {
                 .build();
     }
 
+    /**
+     * Step to encrypt the video.
+     *
+     * @param encryptionTask encryption task
+     * @return step
+     */
     @Bean
     @Qualifier("encryption")
     public Step encryption(EncryptionTask encryptionTask) {
@@ -47,6 +61,12 @@ public class BatchConfig {
                 .tasklet(encryptionTask, transactionManager).build();
     }
 
+    /**
+     * Step to decrypt the video.
+     *
+     * @param decryptionTask decryption task
+     * @return step
+     */
     @Bean
     @Qualifier("decryption")
     public Step decryption(DecryptionTask decryptionTask) {
@@ -54,6 +74,12 @@ public class BatchConfig {
                 .tasklet(decryptionTask, transactionManager).build();
     }
 
+    /**
+     * Step to compare the frames.
+     *
+     * @param compareFramesTask comparison task
+     * @return step
+     */
     @Bean
     @Qualifier("compare")
     public Step comparison(CompareFramesTask compareFramesTask) {

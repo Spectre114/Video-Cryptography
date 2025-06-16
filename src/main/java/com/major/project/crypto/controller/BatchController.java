@@ -49,11 +49,24 @@ public class BatchController {
         this.videoCryptographyJob = videoCryptographyJob;
 
     }
+
+    /**
+     * Home page.
+     *
+     * @return index.html
+     */
     @GetMapping("/")
     public String home() {
         return "index";
     }
 
+    /**
+     * Upload the desired video.
+     *
+     * @param videoFile video file to process
+     * @param model handle values related to data
+     * @return upload page
+     */
     @PostMapping("/upload")
     public String uploadVideo(@RequestParam("videoFile") MultipartFile videoFile, Model model) {
         try {
@@ -72,6 +85,12 @@ public class BatchController {
         return "index";
     }
 
+    /**
+     * Run the batch job to encrypt and decrypt the video.
+     *
+     * @param model handle values related to data
+     * @return batch job runner page
+     */
     @SneakyThrows
     @PostMapping("/run")
     public String runBatch(Model model) {
@@ -85,6 +104,12 @@ public class BatchController {
 
     }
 
+    /**
+     * Display the decrypted video.
+     *
+     * @return video to display
+     * @throws IOException if there is any
+     */
     @GetMapping("/video")
     public ResponseEntity<Resource> streamVideo() throws IOException {
         FileSystemResource resource = new FileSystemResource(decryptedVideo);
@@ -96,6 +121,13 @@ public class BatchController {
         return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     }
 
+    /**
+     * Display the input video.
+     *
+     * @param model handle values related to data
+     * @return video to display
+     * @throws IOException if there is any
+     */
     @GetMapping("/videoInput")
     public ResponseEntity<Resource> streamVideoInput(Model model) throws IOException {
         FileSystemResource resource = new FileSystemResource(videoPaths.getInputFilePath());
