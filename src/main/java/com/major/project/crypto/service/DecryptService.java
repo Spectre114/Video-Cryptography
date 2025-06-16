@@ -14,6 +14,13 @@ public class DecryptService {
         return ((value >>> shift) | (value << (8 - shift))) & 0xFF;
     }
 
+    /**
+     * Decrypt the encrypted frame.
+     *
+     * @param frame encrypted frame
+     * @param keyHexBytes bytes of generated hex string
+     * @return decrypted frame
+     */
     public Mat decryptFrame(Mat frame, byte[] keyHexBytes) {
         int rows = frame.rows();
         int cols = frame.cols();

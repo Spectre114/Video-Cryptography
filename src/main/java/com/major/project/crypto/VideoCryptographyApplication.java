@@ -10,8 +10,6 @@ public class VideoCryptographyApplication {
 	public static void main(String[] args) {
 		LOGGER.info("Video Cryptography Application Started");
 		SpringApplication.run(VideoCryptographyApplication.class, args);
-		//TODO add javadoc comments on methods
 		//TODO add readme.md file
-		//TODO add unit tests for BatchController
 	}
 }

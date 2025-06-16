@@ -14,11 +14,21 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Profile("!test")
 public class Config {
 
+    /**
+     * A resource less transaction manager for batch job.
+     *
+     * @return transaction manager
+     */
     @Bean
     public PlatformTransactionManager transactionManager() {
         return new ResourcelessTransactionManager();
     }
 
+    /**
+     * Datasource for the batch job.
+     *
+     * @return datasource
+     */
     @Bean
     @Primary
     public DataSource dataSource() {
