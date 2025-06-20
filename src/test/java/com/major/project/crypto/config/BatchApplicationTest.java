@@ -1,7 +1,7 @@
 package com.major.project.crypto.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
@@ -40,31 +40,27 @@ public class BatchApplicationTest {
     private final String inputFile;
     private final String outputVideoFile;
     private final String metadataFile;
-    private final String encryptedImageDir;
-    private final String decryptedFrameDir;
+    private final String encryptedVid;
 
     @Autowired
     public BatchApplicationTest(@Value("${video.input-file}") String inputFile,
                                 @Value("${video.decrypted-video}") String outputVideoFile,
+                                @Value("${video.output-encrypted}") String encryptedVid,
                                 @Value("${video.output-encrypted}") String metadataFile,
-                                @Value("${video.ecryptedImageDir}") String encryptedImageDir,
-                                @Value("${video.decryptedFrameDir}") String decryptedFrameDir,
                                 VideoPaths videoPaths) {
         this.inputFile = inputFile;
         this.outputVideoFile = outputVideoFile;
         this.metadataFile = metadataFile + ".json";
-        this.encryptedImageDir = encryptedImageDir;
-        this.decryptedFrameDir = decryptedFrameDir;
         this.videoPaths = videoPaths;
+        this.encryptedVid = encryptedVid;
     }
 
     @Test
     public void testBatchApplication() throws Exception {
         JobExecution jobExecution = jobLauncherTestUtils.launchJob();
         assertEquals(BatchStatus.COMPLETED, jobExecution.getStatus());
-        assertNotNull(new File(outputVideoFile));
-        assertNotNull(new File(metadataFile));
-
+        assertTrue(new File(outputVideoFile).exists());
+        assertTrue(new File(metadataFile).exists());
     }
 
     @BeforeEach
@@ -77,8 +73,7 @@ public class BatchApplicationTest {
     public void cleanUpFiles() {
         deleteIfExists(outputVideoFile);
         deleteIfExists(metadataFile);
-        deleteDirectory(encryptedImageDir);
-        deleteDirectory(decryptedFrameDir);
+        deleteIfExists(encryptedVid);
     }
 
     private void deleteIfExists(String filePath) {

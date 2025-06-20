@@ -2,11 +2,9 @@ package com.major.project.crypto.task;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Queue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.major.project.crypto.module.VideoPaths;
@@ -14,8 +12,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nu.pattern.OpenCV;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.core.Size;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.VideoWriter;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -32,27 +31,30 @@ import com.major.project.crypto.service.EncryptService;
 @Slf4j
 public class EncryptionTask implements Tasklet {
 
-    VideoPaths videoPaths;
+    private final VideoPaths videoPaths;
     private final String encryptedFile;
     private final boolean sha256;
-    private final String encryptedImageDir;
-    EncryptService encrypt;
-    Frames frames;
+    private final EncryptService encrypt;
+    private final Frames frames;
+    private final Boolean showEncryptedVideo;
+    private final String encryptedVid;
     HashMap<Integer, String> metadata = new HashMap<>();
     List<Mat> copiedFrames = new ArrayList<>();
-    Queue<Mat> framesToDecrypt = new ArrayDeque<>();
+    ArrayList<Mat> framesToDecrypt = new ArrayList<>();
 
     @Autowired
     public EncryptionTask(@Value("${video.output-encrypted}") String encryptedFile,
                           @Value("${encrypt.mode:true}") boolean sha256,
-                          @Value("${video.encryptedImageDir}") String encryptedImageDir,
+                          @Value("${video.output-encrypted}") String encryptedVid,
+                          @Value("${video.show-encrypted:false}") Boolean showEncryptedVideo,
                           EncryptService encrypt,
                           Frames frames,
                           VideoPaths videoPaths) {
         this.encryptedFile = encryptedFile;
         this.sha256 = sha256;
+        this.showEncryptedVideo = showEncryptedVideo;
+        this.encryptedVid = encryptedVid;
         this.encrypt = encrypt;
-        this.encryptedImageDir = encryptedImageDir;
         this.frames = frames;
         this.videoPaths = videoPaths;
     }
@@ -64,9 +66,6 @@ public class EncryptionTask implements Tasklet {
         // or compress the videos before processing
         LOGGER.info("Encryption Started");
         OpenCV.loadLocally();
-
-        //TODO clean code to remove the use of images
-        new File(encryptedImageDir).mkdirs();
 
         VideoCapture videoCapture = new VideoCapture(videoPaths.getInputFilePath());
         Mat frame = new Mat();
@@ -81,8 +80,6 @@ public class EncryptionTask implements Tasklet {
             keyHexBytes =keyHex.getBytes(StandardCharsets.UTF_8);
             Mat encrypted = encrypt.encrypt(frame.clone(), keyHexBytes);
             framesToDecrypt.add(encrypted.clone());
-            String encryptedPath = encryptedImageDir + String.format("frame_%04d.png", frameCount);
-            Imgcodecs.imwrite(encryptedPath, encrypted);
             metadata.put(frameCount, keyHex);
             frameCount++;
         }
@@ -94,6 +91,20 @@ public class EncryptionTask implements Tasklet {
         frames.setCopiedFrames(copiedFrames);
         LOGGER.info("Original Frames Copied");
         LOGGER.info("File is encrypted");
+
+        if (showEncryptedVideo) {
+            int width = framesToDecrypt.getFirst().cols();
+            int height = framesToDecrypt.getFirst().rows();
+            Size frameSize = new Size(width, height);
+
+            int fourcc = VideoWriter.fourcc('f', 'f', 'v', '1');
+            VideoWriter writer = new VideoWriter(encryptedVid, fourcc, 30.0, frameSize, true);
+            for (Mat mat : framesToDecrypt) {
+                writer.write(mat.clone());
+            }
+            writer.release();
+            LOGGER.info("Encrypted Video created and stored as: {}", encryptedVid);
+        }
         return RepeatStatus.FINISHED;
     }
 }
