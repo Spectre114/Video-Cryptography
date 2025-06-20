@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.major.project.crypto.module.VideoPaths;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import nu.pattern.OpenCV;
@@ -24,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.major.project.crypto.module.Frames;
+import com.major.project.crypto.module.VideoPaths;
 import com.major.project.crypto.service.EncryptService;
 
 @Component
@@ -87,7 +87,7 @@ public class EncryptionTask implements Tasklet {
         frames.setFramesToDecrypt(framesToDecrypt);
         LOGGER.info("Frames queue size {}", frames.getFramesToDecrypt().size());
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File(encryptedFile + ".json"), metadata);
+        objectMapper.writeValue(new File(encryptedFile.replaceAll("\\..*$", "") + ".json"), metadata);
         frames.setCopiedFrames(copiedFrames);
         LOGGER.info("Original Frames Copied");
         LOGGER.info("File is encrypted");

@@ -50,7 +50,7 @@ public class BatchApplicationTest {
                                 VideoPaths videoPaths) {
         this.inputFile = inputFile;
         this.outputVideoFile = outputVideoFile;
-        this.metadataFile = metadataFile + ".json";
+        this.metadataFile = metadataFile.replaceAll("\\..*$", "") + ".json";
         this.videoPaths = videoPaths;
         this.encryptedVid = encryptedVid;
     }
@@ -87,8 +87,4 @@ public class BatchApplicationTest {
         }
     }
 
-    @SneakyThrows
-    public void deleteDirectory(String directoryPath) {
-        FileUtils.deleteDirectory(new File(directoryPath));
-    }
 }
