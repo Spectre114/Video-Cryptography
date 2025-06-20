@@ -31,7 +31,7 @@ public class DecryptServiceTest {
     public void decryptFrameTest() {
 
         byte[] dummyBytes = new byte[1024];
-        Mat testFrame = decryptService.decryptFrame(frame, dummyBytes);
+        Mat testFrame = decryptService.decrypt(frame, dummyBytes);
         assertNotNull(testFrame);
     }
 }

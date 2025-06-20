@@ -12,11 +12,10 @@ spring:
       initialize-schema: embedded
 
 video:
+  show-encrypted: true
   input-file: "input_vid.mp4"
   output-encrypted: "encryptedVideo.mp4"
   decrypted-video: "decryptedVideo.mp4"
-  encryptedImageDir: "encrypted_frames/"
-  decryptedFrameDir: "decrypted_frames/"
 
 
 encrypt:
