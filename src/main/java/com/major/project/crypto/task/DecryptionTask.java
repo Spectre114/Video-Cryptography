@@ -57,7 +57,7 @@ public class DecryptionTask implements Tasklet {
         framesToDecrypt = frames.getFramesToDecrypt();
         try {
             ObjectMapper mapper = new ObjectMapper();
-            metadataMap = mapper.readValue(new File(encryptedFile + ".json"),
+            metadataMap = mapper.readValue(new File(encryptedFile.replaceAll("\\..*$", "") + ".json"),
                     mapper.getTypeFactory().constructMapType(HashMap.class, Integer.class, String.class));
         } catch (IOException e) {
             e.printStackTrace();
