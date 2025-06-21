@@ -1,6 +1,5 @@
 package com.major.project.crypto.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,20 +69,28 @@ public class BatchController {
     @PostMapping("/upload")
     public String uploadVideo(@RequestParam("videoFile") MultipartFile videoFile, Model model) {
         try {
-            String uploadBasePath = System.getProperty("user.home") + File.separator + "uploaded-videos";
+            // Use system temp directory (safe for Render.com and cloud platforms)
+            String uploadBasePath = System.getProperty("java.io.tmpdir"); // Typically "/tmp" in Linux
             Path uploadDir = Paths.get(uploadBasePath);
-            Files.createDirectories(uploadDir);
+            Files.createDirectories(uploadDir); // Just to be safe, though /tmp always exists
+
+            // Save the uploaded file in temp directory with original filename
             Path filePath = uploadDir.resolve(videoFile.getOriginalFilename());
             videoFile.transferTo(filePath.toFile());
+
+            // Update your shared path holder with absolute path
             videoPaths.setInputFilePath(filePath.toString());
 
+            // Inform the HTML template
             model.addAttribute("showInputVideo", true);
             model.addAttribute("status", "Video uploaded successfully.");
         } catch (IOException e) {
+            e.printStackTrace();
             model.addAttribute("status", "Upload failed: " + e.getMessage());
         }
         return "index";
     }
+
 
     /**
      * Run the batch job to encrypt and decrypt the video.
@@ -94,14 +101,21 @@ public class BatchController {
     @SneakyThrows
     @PostMapping("/run")
     public String runBatch(Model model) {
+        // Check if video file path is set
+        String inputVideoPath = videoPaths.getInputFilePath();
+        if (inputVideoPath == null || inputVideoPath.isEmpty()) {
+            model.addAttribute("status", "Error: No video file uploaded. Please upload a video before running the job.");
+            return "index";
+        }
+
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
         JobExecution execution = jobLauncher.run(videoCryptographyJob, jobParameters);
+
         model.addAttribute("showInputVideo", true);
         model.addAttribute("status", execution.getStatus());
         return "index";
-
     }
 
     /**
@@ -112,10 +126,18 @@ public class BatchController {
      */
     @GetMapping("/video")
     public ResponseEntity<Resource> streamVideo() throws IOException {
-        FileSystemResource resource = new FileSystemResource(decryptedVideo);
-        if (!resource.exists()) {
+        if (decryptedVideo == null || decryptedVideo.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(null);
+        }
+
+        String uploadBasePath = System.getProperty("java.io.tmpdir"); // Typically "/tmp" in Linux
+        Path filePath = Paths.get(uploadBasePath, decryptedVideo);
+        FileSystemResource resource = new FileSystemResource(filePath.toFile());
+        if (!resource.exists() || !resource.isFile()) {
             return ResponseEntity.notFound().build();
         }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("video/mp4"));
         return new ResponseEntity<>(resource, headers, HttpStatus.OK);
@@ -130,10 +152,17 @@ public class BatchController {
      */
     @GetMapping("/videoInput")
     public ResponseEntity<Resource> streamVideoInput(Model model) throws IOException {
-        FileSystemResource resource = new FileSystemResource(videoPaths.getInputFilePath());
-        if (!resource.exists()) {
+        String inputVideoPath = videoPaths.getInputFilePath();
+        if (inputVideoPath == null || inputVideoPath.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(null);
+        }
+
+        FileSystemResource resource = new FileSystemResource(inputVideoPath);
+        if (!resource.exists() || !resource.isFile()) {
             return ResponseEntity.notFound().build();
         }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("video/mp4"));
         model.addAttribute("showInputVideo", true);

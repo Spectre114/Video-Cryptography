@@ -53,7 +53,7 @@ class BatchControllerTest {
     @InjectMocks
     private BatchController batchController;
 
-    private final String decryptedVideoPath = System.getProperty("java.io.tmpdir") + "/decrypted.mp4";
+    private final String decryptedVideoPath = "decrypted.mp4";
 
     @BeforeEach
     void setUp() {
@@ -113,6 +113,7 @@ class BatchControllerTest {
     @Test
     void testRunBatch_Success() throws Exception {
         // Mock job execution
+        when(videoPaths.getInputFilePath()).thenReturn("/tmp/dummy.mp4");
         JobExecution jobExecution = mock(JobExecution.class);
         when(jobExecution.getStatus()).thenReturn(BatchStatus.COMPLETED);
 
@@ -128,7 +129,9 @@ class BatchControllerTest {
     @Test
     void testStreamVideo_FileExists() throws Exception {
         // Create a dummy decrypted video file
-        Path path = Paths.get(decryptedVideoPath);
+        String tempDir = System.getProperty("java.io.tmpdir");
+        Path path = Paths.get(tempDir, decryptedVideoPath);
+        LOGGER.info("Creating dummy video file at: {}", path);
         Files.write(path, "dummy video content".getBytes());
 
         mockMvc.perform(get("/video"))
