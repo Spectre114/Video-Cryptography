@@ -26,6 +26,7 @@
 		<tag/>
 		<url/>
 	</scm>
+	<!-- Just a test -->
 	<properties>
 		<java.version>21</java.version>
 		<mockito.verison>5.18.0</mockito.verison>
