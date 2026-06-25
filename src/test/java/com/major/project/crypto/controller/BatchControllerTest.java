@@ -54,11 +54,12 @@ class BatchControllerTest {
     private BatchController batchController;
 
     private final String decryptedVideoPath = System.getProperty("java.io.tmpdir") + "/decrypted.mp4";
+    private final String enryptedVideoPath = System.getProperty("java.io.tmpdir") + "/encrypted.mp4";
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        batchController = new BatchController(decryptedVideoPath, videoPaths, jobLauncher, videoCryptographyJob);
+        batchController = new BatchController(decryptedVideoPath, enryptedVideoPath, videoPaths, jobLauncher, videoCryptographyJob);
         mockMvc = MockMvcBuilders.standaloneSetup(batchController).build();
     }
 

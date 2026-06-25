@@ -27,6 +27,9 @@
 
     <!-- Show Decrypted Video Button -->
     <div class="button-wrapper">
+        <button onclick="showEncryptVideo()">Show Encrypted Video</button>
+    </div>
+    <div class="button-wrapper">
         <button onclick="showVideo()">Show Decrypted Video</button>
     </div>
 
@@ -40,7 +43,14 @@
                 Your browser does not support the video tag.
             </video>
         </div>
-
+        <!-- Encrypted  Video -->
+        <div id="encryptVideoContainer" style="display: none;">
+            <h2>Encrypted Video</h2>
+            <video controls>
+                <source src="/encryptVideo" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+        </div>
         <!-- Decrypted Video Section -->
         <div id="videoContainer" style="display: none;">
             <h2>Decrypted Video</h2>
@@ -55,6 +65,9 @@
 <script>
     function showVideo() {
         document.getElementById("videoContainer").style.display = "block";
+    }
+    function showEncryptVideo() {
+        document.getElementById("encryptVideoContainer").style.display = "block";
     }
 </script>
 </body>

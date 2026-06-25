@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import lombok.SneakyThrows;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -22,15 +21,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.major.project.crypto.module.VideoPaths;
+
+import lombok.SneakyThrows;
 
 @Controller
 public class BatchController {
 
     private final String decryptedVideo;
+
+    private final String encryptedVideo;
 
     private final VideoPaths videoPaths;
 
@@ -40,6 +45,7 @@ public class BatchController {
 
     @Autowired
     public BatchController(@Value("${video.decrypted-video}") String decryptedVideo,
+                            @Value("${video.output-encrypted}") String encryptedVideo,
                            VideoPaths videoPaths,
                            JobLauncher jobLauncher,
                            Job videoCryptographyJob) {
@@ -47,6 +53,7 @@ public class BatchController {
         this.videoPaths = videoPaths;
         this.jobLauncher = jobLauncher;
         this.videoCryptographyJob = videoCryptographyJob;
+        this.encryptedVideo = encryptedVideo;
 
     }
 
@@ -113,6 +120,24 @@ public class BatchController {
     @GetMapping("/video")
     public ResponseEntity<Resource> streamVideo() throws IOException {
         FileSystemResource resource = new FileSystemResource(decryptedVideo);
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("video/mp4"));
+        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    }
+
+    
+    /**
+     * Display the decrypted video.
+     *
+     * @return video to display
+     * @throws IOException if there is any
+     */
+    @GetMapping("/encryptVideo")
+    public ResponseEntity<Resource> streamEncryptVideo() throws IOException {
+        FileSystemResource resource = new FileSystemResource(encryptedVideo);
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
