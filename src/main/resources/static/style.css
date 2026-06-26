@@ -106,7 +106,7 @@ button:hover {
 }
 
 /* Video containers style */
-#videoInput, #videoContainer {
+#videoInput, #videoContainer, #encryptVideoContainer {
     flex: 1 1 45%;
     background-color: #f9f9f9;
     padding: 10px;
@@ -132,7 +132,7 @@ video {
         padding-top: 20px;
     }
 
-    #videoInput, #videoContainer {
+    #videoInput, #videoContainer, #encryptVideoContainer {
         flex-basis: 100%;
     }
 }

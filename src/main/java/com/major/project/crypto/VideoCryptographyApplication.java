@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class VideoCryptographyApplication {
 	public static void main(String[] args) {
+
 		LOGGER.info("Video Cryptography Application Started");
 		SpringApplication.run(VideoCryptographyApplication.class, args);
 		//TODO add readme.md file
