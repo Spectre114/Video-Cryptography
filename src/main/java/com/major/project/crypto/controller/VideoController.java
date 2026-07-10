@@ -5,12 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Objects;
 
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -26,34 +23,36 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.major.project.crypto.module.VideoPaths;
+import com.major.project.crypto.module.VideoUtils;
+import com.major.project.crypto.task.DecryptionTask;
+import com.major.project.crypto.task.EncryptionTask;
 
 import lombok.SneakyThrows;
 
 @Controller
-public class BatchController {
+public class VideoController {
+
+    private final EncryptionTask encryptionTask;
+
+    private final DecryptionTask decryptionTask;
 
     private final String decryptedVideo;
 
     private final String encryptedVideo;
 
-    private final VideoPaths videoPaths;
-
-    private final JobLauncher jobLauncher;
-
-    private final Job videoCryptographyJob;
+    private final VideoUtils videoUtils;
 
     @Autowired
-    public BatchController(@Value("${video.decrypted-video}") String decryptedVideo,
-                            @Value("${video.output-encrypted}") String encryptedVideo,
-                           VideoPaths videoPaths,
-                           JobLauncher jobLauncher,
-                           Job videoCryptographyJob) {
+    public VideoController(@Value("${video.decrypted-video}") String decryptedVideo,
+                           @Value("${video.output-encrypted}") String encryptedVideo,
+                           VideoUtils videoUtils,
+                           EncryptionTask encryptionTask,
+                           DecryptionTask decryptionTask) {
         this.decryptedVideo = decryptedVideo;
-        this.videoPaths = videoPaths;
-        this.jobLauncher = jobLauncher;
-        this.videoCryptographyJob = videoCryptographyJob;
+        this.videoUtils = videoUtils;
         this.encryptedVideo = encryptedVideo;
+        this.encryptionTask = encryptionTask;
+        this.decryptionTask = decryptionTask;
 
     }
 
@@ -77,12 +76,12 @@ public class BatchController {
     @PostMapping("/upload")
     public String uploadVideo(@RequestParam("videoFile") MultipartFile videoFile, Model model) {
         try {
-            String uploadBasePath = System.getProperty("user.home") + File.separator + "uploaded-videos";
+            String uploadBasePath = System.getProperty("user.dir") + File.separator + "uploaded-videos";
             Path uploadDir = Paths.get(uploadBasePath);
             Files.createDirectories(uploadDir);
-            Path filePath = uploadDir.resolve(videoFile.getOriginalFilename());
+            Path filePath = uploadDir.resolve(Objects.requireNonNull(videoFile.getOriginalFilename()));
             videoFile.transferTo(filePath.toFile());
-            videoPaths.setInputFilePath(filePath.toString());
+            videoUtils.setInputFilePath(filePath.toString());
 
             model.addAttribute("showInputVideo", true);
             model.addAttribute("status", "Video uploaded successfully.");
@@ -100,13 +99,13 @@ public class BatchController {
      */
     @SneakyThrows
     @PostMapping("/run")
-    public String runBatch(Model model) {
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addLong("time", System.currentTimeMillis())
-                .toJobParameters();
-        JobExecution execution = jobLauncher.run(videoCryptographyJob, jobParameters);
+    public String runJob(Model model) {
+        encryptionTask.encrypt();
+        decryptionTask.decrypt();
+        byte[] original = Files.readAllBytes(Paths.get(videoUtils.getInputFilePath()));
+        byte[] decrypted = Files.readAllBytes(Paths.get(decryptedVideo));
         model.addAttribute("showInputVideo", true);
-        model.addAttribute("status", execution.getStatus());
+        model.addAttribute("status", Arrays.equals(original, decrypted) ? "COMPLETED" : "FAILED");
         return "index";
 
     }
@@ -155,7 +154,7 @@ public class BatchController {
      */
     @GetMapping("/videoInput")
     public ResponseEntity<Resource> streamVideoInput(Model model) throws IOException {
-        FileSystemResource resource = new FileSystemResource(videoPaths.getInputFilePath());
+        FileSystemResource resource = new FileSystemResource(videoUtils.getInputFilePath());
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }

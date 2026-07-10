@@ -22,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.major.project.crypto.module.VideoPaths;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,28 +29,30 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.batch.core.*;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.major.project.crypto.module.VideoUtils;
+import com.major.project.crypto.task.DecryptionTask;
+import com.major.project.crypto.task.EncryptionTask;
+
 @Slf4j
-class BatchControllerTest {
+class VideoControllerTest {
 
     private MockMvc mockMvc;
 
     @Mock
-    private VideoPaths videoPaths;
+    private VideoUtils videoUtils;
 
     @Mock
-    private JobLauncher jobLauncher;
+    private EncryptionTask encryptionTask;
 
     @Mock
-    private Job videoCryptographyJob;
+    private DecryptionTask decryptionTask;
 
     @InjectMocks
-    private BatchController batchController;
+    private VideoController videoController;
 
     private final String decryptedVideoPath = System.getProperty("java.io.tmpdir") + "/decrypted.mp4";
     private final String enryptedVideoPath = System.getProperty("java.io.tmpdir") + "/encrypted.mp4";
@@ -59,8 +60,8 @@ class BatchControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        batchController = new BatchController(decryptedVideoPath, enryptedVideoPath, videoPaths, jobLauncher, videoCryptographyJob);
-        mockMvc = MockMvcBuilders.standaloneSetup(batchController).build();
+        videoController = new VideoController(decryptedVideoPath, enryptedVideoPath, videoUtils,  encryptionTask, decryptionTask);
+        mockMvc = MockMvcBuilders.standaloneSetup(videoController).build();
     }
 
     @Test
@@ -72,7 +73,6 @@ class BatchControllerTest {
 
     @Test
     void testUploadVideo_Success() throws Exception {
-        // Prepare a dummy video file (mock)
         MockMultipartFile mockFile = new MockMultipartFile(
                 "videoFile",
                 "testvideo.mp4",
@@ -80,8 +80,7 @@ class BatchControllerTest {
                 "dummy content".getBytes()
         );
 
-        // Spy on VideoPaths to verify setInputFilePath is called
-        doNothing().when(videoPaths).setInputFilePath(anyString());
+        doNothing().when(videoUtils).setInputFilePath(anyString());
 
         mockMvc.perform(multipart("/upload").file(mockFile))
                 .andExpect(status().isOk())
@@ -89,14 +88,12 @@ class BatchControllerTest {
                 .andExpect(model().attribute("showInputVideo", true))
                 .andExpect(model().attribute("status", "Video uploaded successfully."));
 
-        // Verify videoPaths.setInputFilePath was called with the saved path
         ArgumentCaptor<String> pathCaptor = ArgumentCaptor.forClass(String.class);
-        verify(videoPaths).setInputFilePath(pathCaptor.capture());
+        verify(videoUtils).setInputFilePath(pathCaptor.capture());
 
         String savedPath = pathCaptor.getValue();
         assertTrue(savedPath.endsWith("testvideo.mp4"));
 
-        // Clean up uploaded file
         Files.deleteIfExists(Paths.get(savedPath));
     }
 
@@ -113,17 +110,25 @@ class BatchControllerTest {
 
     @Test
     void testRunBatch_Success() throws Exception {
-        // Mock job execution
-        JobExecution jobExecution = mock(JobExecution.class);
-        when(jobExecution.getStatus()).thenReturn(BatchStatus.COMPLETED);
 
-        when(jobLauncher.run(any(Job.class), any(JobParameters.class))).thenReturn(jobExecution);
+        Path original = Files.createTempFile("original", ".mp4");
+        Files.write(original, "dummy".getBytes());
+
+        // Create decrypted file
+        Path decrypted = Paths.get(decryptedVideoPath);
+        Files.write(decrypted, "dummy".getBytes());
+
+        when(videoUtils.getInputFilePath())
+                .thenReturn(original.toString());
 
         mockMvc.perform(post("/run"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"))
                 .andExpect(model().attribute("showInputVideo", true))
-                .andExpect(model().attribute("status", BatchStatus.COMPLETED));
+                .andExpect(model().attribute("status", "COMPLETED"));
+
+        Files.deleteIfExists(original);
+        Files.deleteIfExists(decrypted);
     }
 
     @Test
@@ -154,7 +159,7 @@ class BatchControllerTest {
         String inputFilePath = System.getProperty("java.io.tmpdir") + "/inputvideo.mp4";
         Files.write(Paths.get(inputFilePath), "dummy input video".getBytes());
 
-        when(videoPaths.getInputFilePath()).thenReturn(inputFilePath);
+        when(videoUtils.getInputFilePath()).thenReturn(inputFilePath);
 
         mockMvc.perform(get("/videoInput"))
                 .andExpect(status().isOk());
@@ -164,7 +169,7 @@ class BatchControllerTest {
 
     @Test
     void testStreamVideoInput_FileNotExists() throws Exception {
-        when(videoPaths.getInputFilePath()).thenReturn("/non/existent/path.mp4");
+        when(videoUtils.getInputFilePath()).thenReturn("/non/existent/path.mp4");
 
         mockMvc.perform(get("/videoInput"))
                 .andExpect(status().isNotFound());
