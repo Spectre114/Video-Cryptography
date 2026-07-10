@@ -2,14 +2,16 @@ package com.major.project.crypto.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import nu.pattern.OpenCV;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -26,45 +28,31 @@ public class EncryptServiceTest {
     @InjectMocks
     EncryptService encryptService;
 
+    Path dummyVideoPath;
+
     @BeforeEach
-    public void setUp() {
-        OpenCV.loadLocally();
-        frame1 = new Mat(10,10, CvType.CV_8UC1);
-        frame2 = new Mat(10,10, CvType.CV_8UC3);
-    }
-
-    @Test
-    public void grayFrameToByteTest() {
-
-        byte[] dummyFrame = encryptService.frameToByte(frame1);
-        assertNotNull(dummyFrame);
-    }
-
-    @Test
-    public void colorFrameToByteTest() {
-
-        byte[] dummyFrame = encryptService.frameToByte(frame2);
-        assertNotNull(dummyFrame);
+    @SneakyThrows
+    void setup() {
+        dummyVideoPath = Files.createTempFile("original", ".mp4");
+        Files.write(dummyVideoPath, "dummy".getBytes());
     }
 
     @Test
     public void sha256_generateHexTest() {
-        byte[] dummyFrame = encryptService.frameToByte(frame2);
-        String hexKey = encryptService.generateHexKey(dummyFrame, true);
+        String hexKey = encryptService.generateHexKey(dummyVideoPath, true);
         assertNotNull(hexKey);
     }
 
     @Test
     public void sha1_generateHexTest() {
-        byte[] dummyFrame = new byte[1024];
-        String hexKey = encryptService.generateHexKey(dummyFrame, false);
+        String hexKey = encryptService.generateHexKey(dummyVideoPath, false);
         assertNotNull(hexKey);
     }
 
     @Test
     public void encryptTest() {
         byte[] keyByte = new byte[1024];
-        Mat testFrame = encryptService.encrypt(frame2, keyByte);
+        byte[] testFrame = encryptService.encrypt(dummyVideoPath, keyByte);
         assertNotNull(testFrame);
     }
 }

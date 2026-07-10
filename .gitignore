@@ -11,6 +11,9 @@ decrypted_frames
 encrypted_frames
 .mvn
 
+uploaded-videos
+uploads
+
 ### STS ###
 .apt_generated
 .classpath
