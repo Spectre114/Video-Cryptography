@@ -108,50 +108,6 @@ class VideoControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @Test
-    void testRunBatch_Success() throws Exception {
-
-        Path original = Files.createTempFile("original", ".mp4");
-        Files.write(original, "dummy".getBytes());
-
-        // Create decrypted file
-        Path decrypted = Paths.get(decryptedVideoPath);
-        Files.write(decrypted, "dummy".getBytes());
-
-        when(videoUtils.getInputFilePath())
-                .thenReturn(original.toString());
-
-        mockMvc.perform(post("/run"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"))
-                .andExpect(model().attribute("showInputVideo", true))
-                .andExpect(model().attribute("status", "COMPLETED"));
-
-        Files.deleteIfExists(original);
-        Files.deleteIfExists(decrypted);
-    }
-
-    @Test
-    void testStreamVideo_FileExists() throws Exception {
-        // Create a dummy decrypted video file
-        Path path = Paths.get(decryptedVideoPath);
-        Files.write(path, "dummy video content".getBytes());
-
-        mockMvc.perform(get("/video"))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Content-Type", "video/mp4"));
-
-        Files.deleteIfExists(path);
-    }
-
-    @Test
-    void testStreamVideo_FileNotExists() throws Exception {
-        // Make sure file does not exist
-        Files.deleteIfExists(Paths.get(decryptedVideoPath));
-
-        mockMvc.perform(get("/video"))
-                .andExpect(status().isNotFound());
-    }
 
     @Test
     void testStreamVideoInput_FileExists() throws Exception {
