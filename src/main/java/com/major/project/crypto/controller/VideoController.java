@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.major.project.crypto.module.VideoUtils;
 import com.major.project.crypto.task.DecryptionTask;
 import com.major.project.crypto.task.EncryptionTask;
-
-import lombok.SneakyThrows;
 
 @Controller
 public class VideoController {
@@ -90,43 +87,6 @@ public class VideoController {
         }
         return "index";
     }
-
-    /**
-     * Run the batch job to encrypt and decrypt the video.
-     *
-     * @param model handle values related to data
-     * @return batch job runner page
-     */
-    @SneakyThrows
-    @PostMapping("/run")
-    public String runJob(Model model) {
-        encryptionTask.encrypt();
-        decryptionTask.decrypt();
-        byte[] original = Files.readAllBytes(Paths.get(videoUtils.getInputFilePath()));
-        byte[] decrypted = Files.readAllBytes(Paths.get(decryptedVideo));
-        model.addAttribute("showInputVideo", true);
-        model.addAttribute("status", Arrays.equals(original, decrypted) ? "COMPLETED" : "FAILED");
-        return "index";
-
-    }
-
-    /**
-     * Display the decrypted video.
-     *
-     * @return video to display
-     * @throws IOException if there is any
-     */
-    @GetMapping("/video")
-    public ResponseEntity<Resource> streamVideo() throws IOException {
-        FileSystemResource resource = new FileSystemResource(decryptedVideo);
-        if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf("video/mp4"));
-        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-    }
-
     
     /**
      * Display the decrypted video.
