@@ -10,6 +10,7 @@ target/
 decrypted_frames
 encrypted_frames
 .mvn
+.mvn.*
 
 uploaded-videos
 uploads
@@ -41,3 +42,4 @@ build/
 
 ### VS Code ###
 .vscode/
+start_kafka.sh

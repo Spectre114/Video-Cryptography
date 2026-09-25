@@ -3,6 +3,7 @@ package com.major.project.crypto.config;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.major.project.crypto.module.VideoUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -25,11 +26,12 @@ public class KafkaConfig {
     private final String bootStrapServer;
 
     private static final String VID_CRYPTO_TOPIC = "vid-crypto";
-    private static final String VID_CRPTO_GRP = "vid-crypto-grp";
+    private final String VID_CRPTO_GRP;
 
 
     public KafkaConfig(@Value("${kafka.bootstrap.server:}") String bootStrapServer) {
         this.bootStrapServer = bootStrapServer;
+        this.VID_CRPTO_GRP = "vid-crypto-grp" +  UUID.randomUUID();
     }
 
     @Bean(value = "kafkaTemplate")
@@ -43,6 +45,7 @@ public class KafkaConfig {
 
         producerConfigProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerConfigProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        producerConfigProps.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, 20971520); // Max file sized use
 
         return new DefaultKafkaProducerFactory<>(producerConfigProps);
     }
@@ -58,19 +61,12 @@ public class KafkaConfig {
 
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(
-                JsonDeserializer.VALUE_DEFAULT_TYPE,
-                VideoUtils.class.getName()
-        );
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, VideoUtils.class.getName());
+        props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 20971520);
+        props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, 20971520);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.major.project.crypto");
 
-        props.put(
-                JsonDeserializer.TRUSTED_PACKAGES,
-                "com.major.project.crypto"
-        );
-
-        KafkaConsumer<String, VideoUtils> consumer =
-                new KafkaConsumer<>(props);
-
+        KafkaConsumer<String, VideoUtils> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(List.of(VID_CRYPTO_TOPIC));
 
         return consumer;

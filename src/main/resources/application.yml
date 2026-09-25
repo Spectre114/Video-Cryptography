@@ -1,12 +1,4 @@
 spring:
-#  kafka:
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-#    consumer:
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-
   servlet:
     multipart:
       max-file-size: 10MB
