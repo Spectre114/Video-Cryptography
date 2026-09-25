@@ -12,6 +12,7 @@ public class VideoCryptographyApplication {
 		LOGGER.info("Video Cryptography Application Started");
 		SpringApplication.run(VideoCryptographyApplication.class, args);
 		//TODO add readme.md file
+		//TODO There is synchronisation and threading issues with Kafka consumption
 		//TODO add an endpoint to clear the queues
 		//TODO make it such that the video that is consumed can be viewed again (retention)
 		//TODO make UI better

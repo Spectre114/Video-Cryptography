@@ -41,3 +41,4 @@ build/
 
 ### VS Code ###
 .vscode/
+./start_kafka.sh
